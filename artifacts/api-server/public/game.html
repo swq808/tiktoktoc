@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Play · Tic Tac Toe AI</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <nav class="nav" data-nav></nav>
+  <main class="container">
+    <div class="game-layout">
+      <aside>
+        <div class="card">
+          <h2>Game setup</h2>
+          <div class="field">
+            <label>Mode</label>
+            <div class="tabs" id="modeTabs">
+              <button data-mode="pvai" class="active">vs AI</button>
+              <button data-mode="pvp">vs Friend</button>
+            </div>
+          </div>
+
+          <div id="aiOptions">
+            <div class="field">
+              <label for="difficulty">Difficulty</label>
+              <select id="difficulty" class="input">
+                <option value="easy">Easy — random</option>
+                <option value="medium" selected>Medium — mixed</option>
+                <option value="hard">Hard — unbeatable</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="personality">Personality</label>
+              <select id="personality" class="input"></select>
+            </div>
+            <div class="field">
+              <label>You play as</label>
+              <div class="tabs" id="markTabs">
+                <button data-mark="X" class="active">X (first)</button>
+                <button data-mark="O">O</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="field" style="margin-top:18px;">
+            <button id="newGameBtn" class="primary" style="width:100%;">Start new game</button>
+          </div>
+          <div id="aiStatusNote" class="muted" style="font-size:12px; margin-top:10px;"></div>
+        </div>
+
+        <div class="card" style="margin-top:14px;">
+          <h2>Recent games</h2>
+          <div id="recentGames" class="muted" style="font-size:14px;">Loading…</div>
+        </div>
+      </aside>
+
+      <section>
+        <div class="card">
+          <div class="row between" style="margin-bottom:14px;">
+            <div class="row" id="turnIndicator">
+              <span class="status-pill"><span class="dot"></span> <span id="turnLabel">X to move</span></span>
+            </div>
+            <div class="row">
+              <span id="scoreLabel" class="muted" style="font-size:13px;"></span>
+            </div>
+          </div>
+          <div id="board" class="board" aria-label="Tic Tac Toe board"></div>
+
+          <div id="gameOver" style="display:none; margin-top:16px;" class="alert info"></div>
+
+          <div id="aiBubbleWrap" style="margin-top:16px; display:none;">
+            <div id="aiBubble" class="ai-bubble">
+              <div class="avatar">AI</div>
+              <div>
+                <div class="label" id="aiBubbleLabel">AI</div>
+                <div class="text" id="aiBubbleText"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script type="module" src="/game.js"></script>
+</body>
+</html>

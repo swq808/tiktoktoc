@@ -1,0 +1,104 @@
+{
+  "checkpoints": [
+    {
+      "tag": "CP01-world",
+      "name": "Basic App Setup",
+      "commitUrl": "",
+      "built": "Set up the Express server, the /public + /data folders, README and .gitignore. The server boots and serves a hello-world route plus a static landing page.",
+      "hard": "Getting the gitignore right so node_modules and the future .env never get committed.",
+      "change": "Sketch the URL map on paper before writing any routes.",
+      "aiUsage": "AI helped scaffold package.json scripts; I wrote the routes by hand.",
+      "ab": "Tried both nodemon and node --watch in dev — kept nodemon because the brief required it."
+    },
+    {
+      "tag": "CP02-accounts",
+      "name": "Register and Login",
+      "commitUrl": "",
+      "built": "Built /api/auth/register, /login, /logout, /me. Sessions are signed with express-session and users persist in data/users.json.",
+      "hard": "Realizing that I had to validate username characters server-side, not just in the form.",
+      "change": "Hash passwords with bcrypt next time — the brief says plaintext for learning, not for life.",
+      "aiUsage": "AI suggested express-session config; I tightened cookie sameSite/httpOnly myself.",
+      "ab": "Compared a single combined endpoint vs separate /login and /register — split them for clearer error messages."
+    },
+    {
+      "tag": "CP03-game",
+      "name": "Game Board UI",
+      "commitUrl": "",
+      "built": "Added a 3x3 CSS-grid board with click handlers and a turn indicator pill at the top of the card.",
+      "hard": "Keeping the cells perfectly square at every screen width without media-query gymnastics.",
+      "change": "Move the board state into a tiny class instead of a few module-level variables.",
+      "aiUsage": "AI proposed an aspect-ratio trick for the grid; I picked 1:1 and tested at 320px wide.",
+      "ab": "Tried both SVG lines and CSS borders for the win highlight — kept the colored cell background since it's simpler."
+    },
+    {
+      "tag": "CP04-pvp",
+      "name": "Human vs Human",
+      "commitUrl": "",
+      "built": "Implemented full PvP same-screen play with proper turn switching, win detection across all 8 lines, and draw detection.",
+      "hard": "Off-by-one bugs in the win lines array — I had to write them out twice to be sure.",
+      "change": "Add unit tests for checkWinner before moving on.",
+      "aiUsage": "AI generated the LINES table; I verified each entry by hand.",
+      "ab": "Tried both eight separate ifs and the LINES array — array won for readability."
+    },
+    {
+      "tag": "CP05-save",
+      "name": "Save Games",
+      "commitUrl": "",
+      "built": "Finished games append to data/games.json with mode, board, result, opponent, and a timestamp. Added a recent-games panel on the play page.",
+      "hard": "Concurrent writes corrupted the JSON once — fixed by writing to a tmp file and renaming.",
+      "change": "Lock the file or batch writes if there are ever real concurrent users.",
+      "aiUsage": "AI suggested the tmp+rename trick after I described the corruption symptom.",
+      "ab": "Considered a single games.json vs one file per user — kept one file because the brief says so."
+    },
+    {
+      "tag": "CP06-ai",
+      "name": "Groq Wired Up",
+      "commitUrl": "",
+      "built": "Added the groq-sdk client behind GROQ_API_KEY, a PvP/PvAI toggle, and a server route that returns a legal AI move with an in-character comment.",
+      "hard": "The model sometimes returned non-JSON or invalid moves on its own. I made the server compute the move locally and ask Groq only for the comment.",
+      "change": "Add a small retry with stricter system prompt before falling back.",
+      "aiUsage": "AI helped draft the prompt; I rewrote it once I saw it returning prose instead of JSON.",
+      "ab": "A: ask Groq for {move, comment}. B: compute move locally + ask Groq for {comment}. B was reliable, kept it."
+    },
+    {
+      "tag": "CP07-levels",
+      "name": "Difficulty and Personality",
+      "commitUrl": "",
+      "built": "Easy plays random, medium mixes random and minimax, hard runs full minimax. Personalities are trash-talker, cheerleader, and zen master, applied to the Groq comment.",
+      "hard": "Minimax was easy; making medium feel imperfect-but-threatening took several tries.",
+      "change": "Expose a slider so I can tune the medium random-vs-optimal ratio without redeploying.",
+      "aiUsage": "AI scaffolded the minimax shape; I added the score adjustment so it prefers faster wins.",
+      "ab": "Tried 30/70, 50/50, and 70/30 random-vs-optimal for medium — 50/50 felt most fun."
+    },
+    {
+      "tag": "CP08-stats",
+      "name": "Leaderboard and AI Stats",
+      "commitUrl": "",
+      "built": "Built /api/stats/leaderboard ranking by points (3/1/0) then win rate, and /api/stats/ai with breakdowns by difficulty and personality.",
+      "hard": "Result is stored from the player's perspective, so AI win rate is 'losses' from the player side — wrote that comment into the route.",
+      "change": "Add a server-side filter by date range so I can see weekly stats.",
+      "aiUsage": "AI suggested the points formula; I picked the tiebreakers.",
+      "ab": "Compared sorting by raw wins vs points — points is fairer to people who play a lot of draws."
+    },
+    {
+      "tag": "CP09-c1",
+      "name": "Custom Feature #1 (planned)",
+      "commitUrl": "",
+      "built": "Idea: Replay viewer that animates each move from a saved game. Mini-PRD in /docs.",
+      "hard": "TBD — building it next.",
+      "change": "TBD",
+      "aiUsage": "TBD",
+      "ab": "TBD"
+    },
+    {
+      "tag": "CP10-c2",
+      "name": "Custom Feature #2 (planned)",
+      "commitUrl": "",
+      "built": "Idea: Daily challenge — everyone gets the same opening and the leaderboard resets every 24 hours. Mini-PRD in /docs.",
+      "hard": "TBD",
+      "change": "TBD",
+      "aiUsage": "TBD",
+      "ab": "TBD"
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Log in · Tic Tac Toe AI</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <nav class="nav" data-nav></nav>
+  <main class="container" style="max-width: 460px;">
+    <div class="card">
+      <div class="row between" style="margin-bottom:16px;">
+        <h2 style="margin:0">Welcome</h2>
+        <div class="tabs">
+          <button data-tab="login" class="active">Log in</button>
+          <button data-tab="register">Sign up</button>
+        </div>
+      </div>
+      <div id="formError"></div>
+      <form id="authForm">
+        <div class="field">
+          <label for="username">Username</label>
+          <input id="username" class="input" autocomplete="username" required minlength="3" maxlength="20" />
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input id="password" class="input" type="password" autocomplete="current-password" required minlength="4" />
+        </div>
+        <div class="field" style="margin-top:18px;">
+          <button type="submit" class="primary" id="submitBtn" style="width:100%;">Log in</button>
+        </div>
+      </form>
+      <p class="muted" style="font-size:12px; margin-top:14px;">
+        Heads up: passwords are stored in plaintext for class learning purposes only.
+      </p>
+    </div>
+  </main>
+
+  <script type="module">
+    import { renderNav, api, showError, clearError } from '/main.js';
+
+    const user = await renderNav('/login');
+    if (user) window.location.href = '/game';
+
+    let mode = 'login';
+    const tabs = document.querySelectorAll('[data-tab]');
+    const submitBtn = document.getElementById('submitBtn');
+    const errorBox = document.getElementById('formError');
+
+    tabs.forEach(btn => btn.addEventListener('click', () => {
+      mode = btn.dataset.tab;
+      tabs.forEach(b => b.classList.toggle('active', b === btn));
+      submitBtn.textContent = mode === 'login' ? 'Log in' : 'Create account';
+      clearError(errorBox);
+    }));
+
+    document.getElementById('authForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearError(errorBox);
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      submitBtn.disabled = true;
+      try {
+        await api(`/api/auth/${mode === 'login' ? 'login' : 'register'}`, {
+          method: 'POST',
+          body: { username, password },
+        });
+        window.location.href = '/game';
+      } catch (err) {
+        showError(errorBox, err.message);
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

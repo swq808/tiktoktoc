@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Stats · Tic Tac Toe AI</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <nav class="nav" data-nav></nav>
+  <main class="container">
+    <div class="row between" style="margin-bottom:18px;">
+      <h1 style="margin:0; font-size:28px;">Leaderboard &amp; AI stats</h1>
+      <div class="tabs" id="statsTabs">
+        <button data-tab="leaderboard" class="active">Leaderboard</button>
+        <button data-tab="ai">AI performance</button>
+      </div>
+    </div>
+
+    <div id="leaderboardPanel" class="card">
+      <h2>Top players</h2>
+      <p class="muted" style="margin-top:-6px; margin-bottom:14px;">Ranked by points (3 per win, 1 per draw), then win rate.</p>
+      <div id="leaderboardTable">Loading…</div>
+    </div>
+
+    <div id="aiPanel" style="display:none;">
+      <div class="card">
+        <h2>AI win rate by difficulty</h2>
+        <div id="byDifficulty">Loading…</div>
+      </div>
+      <div class="card" style="margin-top:18px;">
+        <h2>AI win rate by personality</h2>
+        <div id="byPersonality">Loading…</div>
+      </div>
+    </div>
+  </main>
+
+  <script type="module">
+    import { renderNav, api, escapeHtml } from '/main.js';
+    await renderNav('/stats');
+
+    const tabs = document.querySelectorAll('#statsTabs button');
+    const leaderboardPanel = document.getElementById('leaderboardPanel');
+    const aiPanel = document.getElementById('aiPanel');
+    tabs.forEach(b => b.addEventListener('click', () => {
+      tabs.forEach(x => x.classList.toggle('active', x === b));
+      const t = b.dataset.tab;
+      leaderboardPanel.style.display = t === 'leaderboard' ? '' : 'none';
+      aiPanel.style.display = t === 'ai' ? '' : 'none';
+    }));
+
+    function pct(n) { return `${Math.round(n * 100)}%`; }
+
+    async function loadLeaderboard() {
+      try {
+        const { leaderboard } = await api('/api/stats/leaderboard');
+        const target = document.getElementById('leaderboardTable');
+        if (!leaderboard.length) {
+          target.innerHTML = '<p class="muted">No games yet. Play one to climb the board.</p>';
+          return;
+        }
+        target.innerHTML = `
+          <table>
+            <thead><tr>
+              <th>#</th><th>Player</th><th class="right">W</th><th class="right">L</th>
+              <th class="right">D</th><th class="right">Win %</th><th class="right">Points</th>
+            </tr></thead>
+            <tbody>
+              ${leaderboard.map((r, i) => `
+                <tr>
+                  <td>${i + 1}</td>
+                  <td>@${escapeHtml(r.username)}</td>
+                  <td class="right">${r.wins}</td>
+                  <td class="right">${r.losses}</td>
+                  <td class="right">${r.draws}</td>
+                  <td class="right">${pct(r.winRate)}</td>
+                  <td class="right"><strong>${r.points}</strong></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>`;
+      } catch (e) {
+        document.getElementById('leaderboardTable').innerHTML =
+          `<div class="alert error">${escapeHtml(e.message)}</div>`;
+      }
+    }
+
+    async function loadAi() {
+      try {
+        const data = await api('/api/stats/ai');
+        const renderRow = (label, r) => `
+          <tr>
+            <td>${escapeHtml(label)}</td>
+            <td class="right">${r.aiWins}</td>
+            <td class="right">${r.aiLosses}</td>
+            <td class="right">${r.draws}</td>
+            <td class="right">${r.total}</td>
+            <td class="right"><strong>${pct(r.aiWinRate)}</strong></td>
+          </tr>`;
+        const head = `<thead><tr><th></th><th class="right">AI W</th><th class="right">AI L</th><th class="right">D</th><th class="right">Total</th><th class="right">AI Win %</th></tr></thead>`;
+        const noData = `<p class="muted">No AI games recorded yet.</p>`;
+        document.getElementById('byDifficulty').innerHTML = data.byDifficulty.length
+          ? `<table>${head}<tbody>${data.byDifficulty.map(r => renderRow(r.difficulty, r)).join('')}</tbody></table>`
+          : noData;
+        document.getElementById('byPersonality').innerHTML = data.byPersonality.length
+          ? `<table>${head}<tbody>${data.byPersonality.map(r => renderRow(r.personality.replaceAll('_',' '), r)).join('')}</tbody></table>`
+          : noData;
+      } catch (e) {
+        document.getElementById('byDifficulty').innerHTML =
+          `<div class="alert error">${escapeHtml(e.message)}</div>`;
+      }
+    }
+
+    await Promise.all([loadLeaderboard(), loadAi()]);
+  </script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tic Tac Toe AI</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <nav class="nav" data-nav></nav>
+  <main class="container">
+    <section class="hero">
+      <h1>Tic Tac Toe, with attitude.</h1>
+      <p>Play classic Tic Tac Toe on one screen with a friend, or face off against an AI that picks moves with skill and roasts you with personality. Powered by Groq.</p>
+      <div class="cta-row" id="ctaRow">
+        <a class="btn primary" href="/game">Play now</a>
+        <a class="btn" href="/stats">View stats</a>
+      </div>
+    </section>
+
+    <section class="grid-cards">
+      <div class="card">
+        <h2>Same-screen PvP</h2>
+        <p class="muted">Pass the keyboard with a friend and play to win, lose, or draw — every game saves to your history.</p>
+      </div>
+      <div class="card">
+        <h2>Three difficulties</h2>
+        <p class="muted">Easy plays randomly. Medium mixes optimal moves with mistakes. Hard plays perfectly with minimax.</p>
+      </div>
+      <div class="card">
+        <h2>Three personalities</h2>
+        <p class="muted">A trash-talker, a cheerleader, and a zen sage. The AI's voice changes — its skill stays consistent.</p>
+      </div>
+      <div class="card">
+        <h2>Leaderboard &amp; AI stats</h2>
+        <p class="muted">See who's winning the most, and how the AI performs across difficulties and personalities.</p>
+      </div>
+      <div class="card">
+        <h2>Build checkpoints</h2>
+        <p class="muted">Track the build process. Every checkpoint links to a commit and a short reflection.</p>
+        <p style="margin-top:10px"><a href="/checkpoints">See checkpoints →</a></p>
+      </div>
+    </section>
+  </main>
+  <footer>Built for the Tic Tac Toe AI project. Vanilla HTML/CSS/JS · Express · Groq.</footer>
+
+  <script type="module">
+    import { renderNav } from '/main.js';
+    renderNav('/');
+  </script>
+</body>
+</html>

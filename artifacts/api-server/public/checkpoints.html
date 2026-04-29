@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Checkpoints · Tic Tac Toe AI</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <nav class="nav" data-nav></nav>
+  <main class="container">
+    <h1 style="margin-bottom: 6px;">Build checkpoints</h1>
+    <p class="muted" style="margin-top:0;">Each checkpoint is a tagged commit on the main branch that proves a working slice of the project. Edit <code>public/checkpoints.json</code> to update entries.</p>
+
+    <div class="card" id="checkpointList">Loading…</div>
+  </main>
+
+  <script type="module">
+    import { renderNav, api, escapeHtml } from '/main.js';
+    await renderNav('/checkpoints');
+
+    function row(cp) {
+      const link = cp.commitUrl
+        ? `<a href="${escapeHtml(cp.commitUrl)}" target="_blank" rel="noopener">view commit</a>`
+        : '<span class="muted">commit link pending</span>';
+      const dl = (label, value) => value
+        ? `<dt>${label}</dt><dd>${escapeHtml(value)}</dd>`
+        : '';
+      return `
+        <div class="checkpoint">
+          <h3>
+            <span class="tag">${escapeHtml(cp.tag)}</span>
+            ${escapeHtml(cp.name)}
+            <span class="muted" style="font-weight:400; font-size:13px; margin-left:6px;">${link}</span>
+          </h3>
+          <dl>
+            ${dl('What I built', cp.built)}
+            ${dl('What was hard', cp.hard)}
+            ${dl("What I'd change", cp.change)}
+            ${dl('AI usage', cp.aiUsage)}
+            ${dl('A/B testing', cp.ab)}
+          </dl>
+        </div>`;
+    }
+
+    try {
+      const res = await fetch('/checkpoints.json', { credentials: 'same-origin' });
+      const data = await res.json();
+      const target = document.getElementById('checkpointList');
+      if (!data.checkpoints?.length) {
+        target.innerHTML = '<p class="muted">No checkpoints yet.</p>';
+      } else {
+        target.innerHTML = data.checkpoints.map(row).join('');
+      }
+    } catch (e) {
+      document.getElementById('checkpointList').innerHTML =
+        `<div class="alert error">${escapeHtml(e.message)}</div>`;
+    }
+  </script>
+</body>
+</html>
