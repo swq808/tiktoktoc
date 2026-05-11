@@ -172,11 +172,38 @@ async function playAiTurn(lastHumanMove) {
   }
 }
 
+let ttsEnabled = true;
+
+const ttsToggle = document.getElementById('ttsToggle');
+ttsToggle.addEventListener('click', () => {
+  ttsEnabled = !ttsEnabled;
+  ttsToggle.textContent = ttsEnabled ? '🔊' : '🔇';
+  ttsToggle.title = ttsEnabled ? 'Mute voice' : 'Unmute voice';
+  if (!ttsEnabled) window.speechSynthesis.cancel();
+});
+
+function speakText(text) {
+  if (!ttsEnabled || !text || !window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.rate = 1.05;
+  utter.pitch = personalityPitch(state.personality);
+  window.speechSynthesis.speak(utter);
+}
+
+function personalityPitch(id) {
+  if (id === 'trash_talker') return 1.3;
+  if (id === 'cheerleader') return 1.5;
+  if (id === 'zen_master') return 0.7;
+  return 1.0;
+}
+
 function showAiBubble({ thinking, text }) {
   els.aiBubbleWrap.style.display = state.mode === 'pvai' ? '' : 'none';
   els.aiBubble.classList.toggle('thinking', !!thinking);
   els.aiBubbleLabel.textContent = personalityLabel(state.personality);
   els.aiBubbleText.textContent = text;
+  if (!thinking && text) speakText(text);
 }
 
 function personalityLabel(id) {
