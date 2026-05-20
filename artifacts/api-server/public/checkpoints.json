@@ -1,10 +1,11 @@
 {
   "checkpoints": [
     {
-      "tag": "CP01-world",
-      "name": "Basic App Setup",
+      "tag": "CP01-setup",
+      "name": "Project Setup",
+      "date": "2026-05-01",
       "commitUrl": "",
-      "built": "Set up the Express server, the /public + /data folders, README and .gitignore. The server boots and serves a hello-world route plus a static landing page.",
+      "built": "Set up the Express server, the /public + /data folders, package.json, README and .gitignore. The server boots and serves a hello-world route plus a static landing page.",
       "hard": "Getting the gitignore right so node_modules and the future .env never get committed.",
       "change": "Sketch the URL map on paper before writing any routes.",
       "aiUsage": "AI helped scaffold package.json scripts; I wrote the routes by hand.",
@@ -13,6 +14,7 @@
     {
       "tag": "CP02-accounts",
       "name": "Register and Login",
+      "date": "2026-05-02",
       "commitUrl": "",
       "built": "Built /api/auth/register, /login, /logout, /me. Sessions are signed with express-session and users persist in data/users.json.",
       "hard": "Realizing that I had to validate username characters server-side, not just in the form.",
@@ -23,6 +25,7 @@
     {
       "tag": "CP03-game",
       "name": "Game Board UI",
+      "date": "2026-05-03",
       "commitUrl": "",
       "built": "Added a 3x3 CSS-grid board with click handlers and a turn indicator pill at the top of the card.",
       "hard": "Keeping the cells perfectly square at every screen width without media-query gymnastics.",
@@ -33,6 +36,7 @@
     {
       "tag": "CP04-pvp",
       "name": "Human vs Human",
+      "date": "2026-05-04",
       "commitUrl": "",
       "built": "Implemented full PvP same-screen play with proper turn switching, win detection across all 8 lines, and draw detection.",
       "hard": "Off-by-one bugs in the win lines array — I had to write them out twice to be sure.",
@@ -43,6 +47,7 @@
     {
       "tag": "CP05-save",
       "name": "Save Games",
+      "date": "2026-05-05",
       "commitUrl": "",
       "built": "Finished games append to data/games.json with mode, board, result, opponent, and a timestamp. Added a recent-games panel on the play page.",
       "hard": "Concurrent writes corrupted the JSON once — fixed by writing to a tmp file and renaming.",
@@ -52,7 +57,8 @@
     },
     {
       "tag": "CP06-ai",
-      "name": "Groq Wired Up",
+      "name": "Groq AI Wired Up",
+      "date": "2026-05-07",
       "commitUrl": "",
       "built": "Added the groq-sdk client behind GROQ_API_KEY, a PvP/PvAI toggle, and a server route that returns a legal AI move with an in-character comment.",
       "hard": "The model sometimes returned non-JSON or invalid moves on its own. I made the server compute the move locally and ask Groq only for the comment.",
@@ -63,6 +69,7 @@
     {
       "tag": "CP07-levels",
       "name": "Difficulty and Personality",
+      "date": "2026-05-08",
       "commitUrl": "",
       "built": "Easy plays random, medium mixes random and minimax, hard runs full minimax. Personalities are trash-talker, cheerleader, and zen master, applied to the Groq comment.",
       "hard": "Minimax was easy; making medium feel imperfect-but-threatening took several tries.",
@@ -73,6 +80,7 @@
     {
       "tag": "CP08-stats",
       "name": "Leaderboard and AI Stats",
+      "date": "2026-05-10",
       "commitUrl": "",
       "built": "Built /api/stats/leaderboard ranking by points (3/1/0) then win rate, and /api/stats/ai with breakdowns by difficulty and personality.",
       "hard": "Result is stored from the player's perspective, so AI win rate is 'losses' from the player side — wrote that comment into the route.",
@@ -81,24 +89,59 @@
       "ab": "Compared sorting by raw wins vs points — points is fairer to people who play a lot of draws."
     },
     {
-      "tag": "CP09-c1",
-      "name": "Custom Feature #1 (planned)",
+      "tag": "CP09-profile",
+      "name": "Profile and Extended Profile",
+      "date": "2026-05-15",
       "commitUrl": "",
-      "built": "Idea: Replay viewer that animates each move from a saved game. Mini-PRD in /docs.",
-      "hard": "TBD — building it next.",
-      "change": "TBD",
-      "aiUsage": "TBD",
-      "ab": "TBD"
+      "built": "Added a full profile page with 9 data fields: username, display name, bio, favorite personality, favorite difficulty, country, games goal, avatar color, and join date. Users can view and edit their profile. The /api/users/profile route handles GET and PUT. Also added id and role fields to every user record.",
+      "hard": "Deciding which profile fields are editable vs read-only — kept username and joined date as read-only.",
+      "change": "Add profile photo upload so the avatar isn't just an initials circle.",
+      "aiUsage": "AI helped me think through what fields connect meaningfully to the game (favPersonality, favDifficulty).",
+      "ab": "Considered putting edit inline vs a separate edit mode — separate mode was cleaner on mobile."
     },
     {
-      "tag": "CP10-c2",
-      "name": "Custom Feature #2 (planned)",
+      "tag": "CP10-admin",
+      "name": "Admin Dashboard",
+      "date": "2026-05-17",
       "commitUrl": "",
-      "built": "Idea: Daily challenge — everyone gets the same opening and the leaderboard resets every 24 hours. Mini-PRD in /docs.",
-      "hard": "TBD",
-      "change": "TBD",
-      "aiUsage": "TBD",
-      "ab": "TBD"
+      "built": "Built /admin page and /api/admin/* routes behind a role === 'admin' middleware. Admin can see overall stats (users, games, games today), manage all users, and create/edit/delete announcements. Regular users are blocked with a 403.",
+      "hard": "Making the redirect happen cleanly on the frontend when a non-admin visits /admin — checking the role from /api/auth/me before rendering.",
+      "change": "Add an audit log so I can see what the admin changed and when.",
+      "aiUsage": "AI suggested the middleware pattern for checking role server-side before any route handler runs.",
+      "ab": "Considered a separate admin subdomain vs a /admin route — kept it as a route since the whole app is one server."
+    },
+    {
+      "tag": "CP11-announcements",
+      "name": "Announcements and Game History",
+      "date": "2026-05-18",
+      "commitUrl": "",
+      "built": "Active announcements from announcements.json now appear on the home page — admin edits are instantly visible to all users. Also built the Game History page with result/mode/difficulty filters and a board replay modal that shows each game's final state and move order.",
+      "hard": "The board replay needed to re-run win-line detection on the stored board array — pulled the same LINES constant used in the game engine.",
+      "change": "Add pagination on history for players with 100+ games.",
+      "aiUsage": "AI helped write the filter + map pipeline for the history table.",
+      "ab": "Tried showing the move list as a timeline vs a badge row — badges are more compact and still readable."
+    },
+    {
+      "tag": "CP12-home",
+      "name": "Home Page and Navigation Polish",
+      "date": "2026-05-19",
+      "commitUrl": "",
+      "built": "Replaced the empty index.html with a real home page: hero section, feature cards, live quick stats, and announcement feed. Updated the nav to include History, Profile, and Admin links dynamically based on login state and role.",
+      "hard": "The nav had to stay simple on mobile — used flex-wrap so links wrap gracefully instead of overflowing.",
+      "change": "Add a hamburger menu for very small screens.",
+      "aiUsage": "AI suggested fetching leaderboard data to power the quick stats on the home page.",
+      "ab": "Tried showing a random Tic Tac Toe board on the hero vs a text description — kept text since the board needed JS to animate."
+    },
+    {
+      "tag": "CP13-polish",
+      "name": "Final Polish and Data Seeding",
+      "date": "2026-05-20",
+      "commitUrl": "",
+      "built": "Added 5 seed users with full extended profiles, 5 seed games with userId cross-references, and 5 seed announcements. Verified all 8 pages load and all JSON requirements (5+ records, 4+ fields, id field, cross-file references) are met. Fixed styles for the modal overlay, progress bar, and admin announcement row layout.",
+      "hard": "Making sure every page works for both logged-in and guest users — some routes needed soft redirects instead of hard 401s.",
+      "change": "Add end-to-end tests to verify each page loads and the key API routes return correct data.",
+      "aiUsage": "AI helped seed realistic game data and cross-checked the requirement list.",
+      "ab": "Considered lazy-loading each page's JS vs one shared bundle — kept per-page ES module scripts since the app is small."
     }
   ]
 }

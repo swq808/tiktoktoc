@@ -85,6 +85,7 @@ button, .btn {
   cursor: pointer;
   display: inline-flex; align-items: center; gap: 6px;
   font-family: Arial, Helvetica, sans-serif;
+  text-decoration: none;
 }
 button:hover, .btn:hover { background: #dddddd; }
 button:active { background: #cccccc; }
@@ -105,6 +106,7 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
   font-family: Arial, Helvetica, sans-serif;
 }
 .input:focus { border-color: #3355cc; outline: 2px solid #aabbff; }
+textarea.input { resize: vertical; }
 label { display: block; font-size: 13px; color: #444444; margin-bottom: 4px; font-weight: bold; }
 .field + .field { margin-top: 12px; }
 
@@ -216,3 +218,74 @@ tr:hover td { background: #f9f9ff; }
 .checkpoint dt { color: var(--muted); font-weight: bold; }
 
 footer { text-align: center; color: var(--muted); font-size: 13px; padding: 20px; border-top: 1px solid #dddddd; margin-top: 20px; }
+
+/* Profile page */
+.profile-header {
+  display: flex; align-items: center; gap: 16px; margin-bottom: 4px;
+}
+.profile-avatar {
+  width: 60px; height: 60px; border-radius: 50%;
+  background: #3355cc; color: white;
+  display: grid; place-items: center;
+  font-size: 22px; font-weight: 900;
+  flex: none;
+  border: 3px solid white;
+  box-shadow: var(--shadow);
+}
+.profile-dl {
+  margin: 0; display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 16px; font-size: 14px;
+}
+.profile-dl dt { color: var(--muted); font-weight: bold; white-space: nowrap; }
+.profile-dl dd { margin: 0; }
+
+.stats-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+}
+.stats-row { text-align: center; }
+.stat-num { display: block; font-size: 28px; font-weight: bold; color: var(--accent); }
+.stat-label { font-size: 13px; color: var(--muted); }
+
+.progress-bar {
+  height: 8px; background: #dddddd; border-radius: 4px; overflow: hidden;
+}
+.progress-fill {
+  height: 100%; background: #3355cc; border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+/* Feature cards on home */
+.feature-card { text-align: center; }
+.feature-card h3 { margin: 8px 0 6px; font-size: 16px; }
+.feature-icon { font-size: 32px; margin-bottom: 4px; }
+
+/* Admin page */
+.stat-big { font-size: 36px; font-weight: bold; color: var(--accent); }
+
+.ann-row {
+  display: flex; gap: 12px; justify-content: space-between; align-items: flex-start;
+  padding: 12px 0; border-bottom: 1px solid #eeeeee;
+}
+.ann-row:last-child { border-bottom: 0; }
+.ann-info { flex: 1; }
+.ann-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; flex-wrap: wrap; }
+
+/* Modal */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000; padding: 16px;
+}
+.modal-box {
+  width: 100%; max-width: 540px;
+  max-height: 90vh; overflow-y: auto;
+}
+
+/* History page board modal mini-board */
+#modalBoard.board {
+  max-width: 260px;
+  margin: 0 auto;
+}
+#modalBoard .cell { font-size: clamp(24px, 8vw, 40px); }

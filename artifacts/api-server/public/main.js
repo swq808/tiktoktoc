@@ -39,10 +39,12 @@ export async function renderNav(activePath) {
       ${user ? link('/game', 'Play') : ''}
       ${link('/stats', 'Stats')}
       ${link('/checkpoints', 'Checkpoints')}
+      ${user ? link('/history', 'History') : ''}
+      ${user ? link('/profile', 'Profile') : ''}
+      ${user && user.role === 'admin' ? link('/admin', 'Admin') : ''}
       ${user
-        ? `<span class="who">@${escapeHtml(user.username)}</span>
-           <button class="ghost" id="logoutBtn">Log out</button>`
-        : link('/login', 'Log in / Sign up')}
+        ? `<button class="ghost" id="logoutBtn" style="color:#ddddff;">Log out</button>`
+        : link('/login', 'Log in')}
     </div>
   `;
   const logoutBtn = nav.querySelector('#logoutBtn');

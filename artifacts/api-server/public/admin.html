@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin · Tic Tac Toe AI</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <nav class="nav" data-nav></nav>
+  <main class="container">
+    <div class="row between" style="margin-bottom:18px;">
+      <h1 style="margin:0; font-size:28px;">Admin Dashboard</h1>
+      <span class="badge" style="background:#fff3cd;color:#856404;border-color:#ffc107; font-size:13px; padding:4px 10px;">Admin only</span>
+    </div>
+
+    <div id="adminError"></div>
+
+    <div class="grid-cards" style="margin-bottom:20px;" id="statsCards">
+      <div class="card"><div class="stat-big" id="statUsers">—</div><div class="muted">Total users</div></div>
+      <div class="card"><div class="stat-big" id="statGames">—</div><div class="muted">Total games</div></div>
+      <div class="card"><div class="stat-big" id="statToday">—</div><div class="muted">Games today</div></div>
+    </div>
+
+    <div class="tabs" id="adminTabs" style="margin-bottom:16px;">
+      <button data-tab="announcements" class="active">Announcements</button>
+      <button data-tab="users">Users</button>
+    </div>
+
+    <div id="tabAnnouncements">
+      <div class="card" style="margin-bottom:16px;">
+        <h2 style="margin-bottom:14px;">New announcement</h2>
+        <div class="field">
+          <label for="annTitle">Title</label>
+          <input id="annTitle" class="input" maxlength="80" placeholder="Announcement title" />
+        </div>
+        <div class="field">
+          <label for="annBody">Message</label>
+          <textarea id="annBody" class="input" rows="3" maxlength="500" style="resize:vertical;" placeholder="What do you want to tell players?"></textarea>
+        </div>
+        <div class="field">
+          <label for="annStatus">Status</label>
+          <select id="annStatus" class="input">
+            <option value="active">Active (visible on home page)</option>
+            <option value="inactive">Inactive (hidden)</option>
+          </select>
+        </div>
+        <div class="field" style="margin-top:16px;">
+          <button id="createAnnBtn" class="primary">Post announcement</button>
+          <div id="createAnnError" style="margin-top:8px;"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>All announcements</h2>
+        <div id="annList">Loading…</div>
+      </div>
+    </div>
+
+    <div id="tabUsers" style="display:none;">
+      <div class="card">
+        <h2>All users</h2>
+        <div id="usersList">Loading…</div>
+      </div>
+    </div>
+  </main>
+
+  <div id="editModal" style="display:none;" class="modal-overlay">
+    <div class="modal-box card">
+      <h2 style="margin-bottom:14px;">Edit announcement</h2>
+      <input type="hidden" id="editAnnId" />
+      <div class="field">
+        <label for="editAnnTitle">Title</label>
+        <input id="editAnnTitle" class="input" maxlength="80" />
+      </div>
+      <div class="field">
+        <label for="editAnnBody">Message</label>
+        <textarea id="editAnnBody" class="input" rows="4" maxlength="500" style="resize:vertical;"></textarea>
+      </div>
+      <div class="field">
+        <label for="editAnnStatus">Status</label>
+        <select id="editAnnStatus" class="input">
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </div>
+      <div class="field" style="margin-top:16px;">
+        <div class="row" style="gap:10px;">
+          <button id="saveEditBtn" class="primary">Save changes</button>
+          <button id="cancelEditBtn">Cancel</button>
+        </div>
+        <div id="editAnnError" style="margin-top:8px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { renderNav, api, escapeHtml, showError, clearError } from '/main.js';
+
+    const user = await renderNav('/admin');
+    if (!user) { window.location.href = '/login'; }
+    else if (user.role !== 'admin') { window.location.href = '/'; }
+
+    const tabs = document.querySelectorAll('#adminTabs button');
+    const tabAnn = document.getElementById('tabAnnouncements');
+    const tabUsers = document.getElementById('tabUsers');
+    tabs.forEach(btn => btn.addEventListener('click', () => {
+      tabs.forEach(b => b.classList.toggle('active', b === btn));
+      tabAnn.style.display = btn.dataset.tab === 'announcements' ? '' : 'none';
+      tabUsers.style.display = btn.dataset.tab === 'users' ? '' : 'none';
+    }));
+
+    async function loadStats() {
+      try {
+        const data = await api('/api/admin/stats');
+        document.getElementById('statUsers').textContent = data.totalUsers;
+        document.getElementById('statGames').textContent = data.totalGames;
+        document.getElementById('statToday').textContent = data.gamesToday;
+      } catch (err) {
+        showError(document.getElementById('adminError'), err.message);
+      }
+    }
+
+    async function loadAnnouncements() {
+      try {
+        const { announcements } = await api('/api/admin/announcements');
+        const list = document.getElementById('annList');
+        if (!announcements.length) {
+          list.innerHTML = '<p class="muted">No announcements yet.</p>';
+          return;
+        }
+        list.innerHTML = announcements.map(a => `
+          <div class="ann-row" data-id="${escapeHtml(a.id)}">
+            <div class="ann-info">
+              <strong>${escapeHtml(a.title)}</strong>
+              <span class="badge ${a.status === 'active' ? 'win' : 'draw'}" style="margin-left:8px;">${a.status}</span>
+              <p class="muted" style="margin:4px 0 0; font-size:13px;">${escapeHtml(a.body)}</p>
+              <p class="muted" style="margin:4px 0 0; font-size:12px;">Posted ${new Date(a.createdAt).toLocaleDateString()} by ${escapeHtml(a.createdBy)}</p>
+            </div>
+            <div class="ann-actions">
+              <button class="editAnnBtn" data-id="${escapeHtml(a.id)}">Edit</button>
+              <button class="toggleAnnBtn ${a.status === 'active' ? '' : 'primary'}" data-id="${escapeHtml(a.id)}" data-status="${a.status}">
+                ${a.status === 'active' ? 'Deactivate' : 'Activate'}
+              </button>
+              <button class="deleteAnnBtn" style="color:var(--danger);" data-id="${escapeHtml(a.id)}">Delete</button>
+            </div>
+          </div>
+        `).join('');
+
+        list.querySelectorAll('.editAnnBtn').forEach(btn => {
+          btn.addEventListener('click', () => openEditModal(btn.dataset.id, announcements));
+        });
+        list.querySelectorAll('.toggleAnnBtn').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const newStatus = btn.dataset.status === 'active' ? 'inactive' : 'active';
+            await api(`/api/admin/announcements/${btn.dataset.id}`, { method: 'PUT', body: { status: newStatus } });
+            await loadAnnouncements();
+          });
+        });
+        list.querySelectorAll('.deleteAnnBtn').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            if (!confirm('Delete this announcement?')) return;
+            await api(`/api/admin/announcements/${btn.dataset.id}`, { method: 'DELETE' });
+            await loadAnnouncements();
+          });
+        });
+      } catch (err) {
+        document.getElementById('annList').innerHTML = `<div class="alert error">${escapeHtml(err.message)}</div>`;
+      }
+    }
+
+    async function loadUsers() {
+      try {
+        const { users } = await api('/api/admin/users');
+        const list = document.getElementById('usersList');
+        if (!users.length) { list.innerHTML = '<p class="muted">No users found.</p>'; return; }
+        list.innerHTML = `
+          <table>
+            <thead><tr>
+              <th>Username</th><th>Display name</th><th>Role</th>
+              <th class="right">Games</th><th class="right">Wins</th><th>Joined</th>
+            </tr></thead>
+            <tbody>
+              ${users.map(u => `
+                <tr>
+                  <td>@${escapeHtml(u.username)}</td>
+                  <td>${escapeHtml(u.displayName || '—')}</td>
+                  <td>${u.role === 'admin' ? '<span class="badge" style="background:#fff3cd;color:#856404;border-color:#ffc107;">admin</span>' : 'user'}</td>
+                  <td class="right">${u.gameCount}</td>
+                  <td class="right">${u.wins}</td>
+                  <td>${new Date(u.createdAt).toLocaleDateString()}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+      } catch (err) {
+        document.getElementById('usersList').innerHTML = `<div class="alert error">${escapeHtml(err.message)}</div>`;
+      }
+    }
+
+    function openEditModal(id, announcements) {
+      const ann = announcements.find(a => a.id === id);
+      if (!ann) return;
+      document.getElementById('editAnnId').value = ann.id;
+      document.getElementById('editAnnTitle').value = ann.title;
+      document.getElementById('editAnnBody').value = ann.body;
+      document.getElementById('editAnnStatus').value = ann.status;
+      clearError(document.getElementById('editAnnError'));
+      document.getElementById('editModal').style.display = '';
+    }
+
+    document.getElementById('cancelEditBtn').addEventListener('click', () => {
+      document.getElementById('editModal').style.display = 'none';
+    });
+
+    document.getElementById('saveEditBtn').addEventListener('click', async () => {
+      const id = document.getElementById('editAnnId').value;
+      const btn = document.getElementById('saveEditBtn');
+      const errBox = document.getElementById('editAnnError');
+      clearError(errBox);
+      btn.disabled = true;
+      try {
+        await api(`/api/admin/announcements/${id}`, {
+          method: 'PUT',
+          body: {
+            title: document.getElementById('editAnnTitle').value,
+            body: document.getElementById('editAnnBody').value,
+            status: document.getElementById('editAnnStatus').value,
+          },
+        });
+        document.getElementById('editModal').style.display = 'none';
+        await loadAnnouncements();
+      } catch (err) {
+        showError(errBox, err.message);
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    document.getElementById('createAnnBtn').addEventListener('click', async () => {
+      const btn = document.getElementById('createAnnBtn');
+      const errBox = document.getElementById('createAnnError');
+      clearError(errBox);
+      btn.disabled = true;
+      try {
+        await api('/api/admin/announcements', {
+          method: 'POST',
+          body: {
+            title: document.getElementById('annTitle').value,
+            body: document.getElementById('annBody').value,
+            status: document.getElementById('annStatus').value,
+          },
+        });
+        document.getElementById('annTitle').value = '';
+        document.getElementById('annBody').value = '';
+        document.getElementById('annStatus').value = 'active';
+        await loadAnnouncements();
+      } catch (err) {
+        showError(errBox, err.message);
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    document.getElementById('editModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('editModal')) {
+        document.getElementById('editModal').style.display = 'none';
+      }
+    });
+
+    await Promise.all([loadStats(), loadAnnouncements(), loadUsers()]);
+  </script>
+</body>
+</html>

@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Profile · Tic Tac Toe AI</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <nav class="nav" data-nav></nav>
+  <main class="container" style="max-width: 720px;">
+    <div class="row between" style="margin-bottom:18px;">
+      <h1 style="margin:0; font-size:28px;">My Profile</h1>
+      <button id="editToggleBtn" class="primary">Edit profile</button>
+    </div>
+
+    <div id="profileError"></div>
+
+    <div id="viewMode">
+      <div class="card" style="margin-bottom:16px;">
+        <div class="profile-header">
+          <div id="avatarCircle" class="profile-avatar">?</div>
+          <div>
+            <div id="viewDisplayName" style="font-size:22px; font-weight:bold;"></div>
+            <div id="viewUsername" class="muted" style="font-size:14px;"></div>
+            <div id="viewRole" style="margin-top:4px;"></div>
+          </div>
+        </div>
+        <p id="viewBio" class="muted" style="margin:12px 0 0; font-style:italic;"></p>
+      </div>
+
+      <div class="grid-cards" style="margin-bottom:16px;">
+        <div class="card">
+          <h2>Game stats</h2>
+          <div id="statsGrid" class="stats-grid">Loading…</div>
+        </div>
+        <div class="card">
+          <h2>Preferences</h2>
+          <dl class="profile-dl" id="viewPrefs">Loading…</dl>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Account info</h2>
+        <dl class="profile-dl" id="viewAccount">Loading…</dl>
+      </div>
+    </div>
+
+    <div id="editMode" style="display:none;">
+      <div class="card">
+        <h2>Edit your profile</h2>
+        <div class="field">
+          <label for="editDisplayName">Display name</label>
+          <input id="editDisplayName" class="input" maxlength="40" placeholder="How should we call you?" />
+        </div>
+        <div class="field">
+          <label for="editBio">Bio <span class="muted">(max 200 chars)</span></label>
+          <textarea id="editBio" class="input" rows="3" maxlength="200" style="resize:vertical;" placeholder="Tell other players about yourself…"></textarea>
+        </div>
+        <div class="field">
+          <label for="editCountry">Country / Location</label>
+          <input id="editCountry" class="input" maxlength="40" placeholder="e.g. USA, Canada, UK…" />
+        </div>
+        <div class="field">
+          <label for="editGamesGoal">Games goal</label>
+          <input id="editGamesGoal" class="input" type="number" min="1" max="9999" placeholder="How many games do you want to play?" />
+        </div>
+        <div class="field">
+          <label for="editFavPersonality">Favorite AI personality</label>
+          <select id="editFavPersonality" class="input">
+            <option value="cheerleader">Cheerleader</option>
+            <option value="trash_talker">Trash Talker</option>
+            <option value="zen_master">Zen Master</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="editFavDifficulty">Favorite difficulty</label>
+          <select id="editFavDifficulty" class="input">
+            <option value="easy">Easy — random</option>
+            <option value="medium">Medium — mixed</option>
+            <option value="hard">Hard — unbeatable</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="editAvatarColor">Avatar color</label>
+          <div class="row" style="gap:10px; align-items:center;">
+            <input id="editAvatarColor" type="color" style="width:48px; height:36px; border:1px solid #aaa; border-radius:4px; cursor:pointer; padding:2px;" />
+            <span class="muted" style="font-size:13px;">Shown on your avatar circle</span>
+          </div>
+        </div>
+        <div class="field" style="margin-top:20px;">
+          <div class="row" style="gap:10px;">
+            <button id="saveProfileBtn" class="primary">Save changes</button>
+            <button id="cancelEditBtn">Cancel</button>
+          </div>
+          <div id="saveError" style="margin-top:8px;"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script type="module">
+    import { renderNav, api, escapeHtml, showError, clearError } from '/main.js';
+
+    const user = await renderNav('/profile');
+    if (!user) { window.location.href = '/login'; }
+
+    let profile = null;
+
+    const personalityLabels = { cheerleader: 'Cheerleader', trash_talker: 'Trash Talker', zen_master: 'Zen Master' };
+    const diffLabels = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
+
+    function initials(name) {
+      return (name || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    }
+
+    function renderView(data) {
+      profile = data;
+      const u = data.user;
+      const s = data.stats;
+
+      document.getElementById('avatarCircle').style.background = u.avatarColor || '#3355cc';
+      document.getElementById('avatarCircle').textContent = initials(u.displayName || u.username);
+      document.getElementById('viewDisplayName').textContent = u.displayName || u.username;
+      document.getElementById('viewUsername').textContent = `@${u.username}`;
+      document.getElementById('viewRole').innerHTML = u.role === 'admin'
+        ? '<span class="badge" style="background:#fff3cd;color:#856404;border-color:#ffc107;">Admin</span>'
+        : '';
+      document.getElementById('viewBio').textContent = u.bio || 'No bio yet.';
+
+      const pct = s.total > 0 ? Math.round((s.wins / s.total) * 100) : 0;
+      const progress = Math.min(100, Math.round((s.total / (u.gamesGoal || 20)) * 100));
+      document.getElementById('statsGrid').innerHTML = `
+        <div class="stats-row">
+          <span class="stat-num">${s.wins}</span><span class="stat-label">Wins</span>
+        </div>
+        <div class="stats-row">
+          <span class="stat-num">${s.losses}</span><span class="stat-label">Losses</span>
+        </div>
+        <div class="stats-row">
+          <span class="stat-num">${s.draws}</span><span class="stat-label">Draws</span>
+        </div>
+        <div class="stats-row">
+          <span class="stat-num">${pct}%</span><span class="stat-label">Win rate</span>
+        </div>
+        <div style="grid-column:1/-1; margin-top:10px;">
+          <div class="muted" style="font-size:12px; margin-bottom:4px;">Games played: ${s.total} / ${u.gamesGoal || 20} goal</div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${progress}%"></div></div>
+        </div>
+      `;
+
+      document.getElementById('viewPrefs').innerHTML = `
+        <dt>Fav. personality</dt><dd>${escapeHtml(personalityLabels[u.favPersonality] || u.favPersonality || '—')}</dd>
+        <dt>Fav. difficulty</dt><dd>${escapeHtml(diffLabels[u.favDifficulty] || u.favDifficulty || '—')}</dd>
+        <dt>Country</dt><dd>${escapeHtml(u.country || '—')}</dd>
+        <dt>Games goal</dt><dd>${u.gamesGoal || 20} games</dd>
+      `;
+
+      document.getElementById('viewAccount').innerHTML = `
+        <dt>Username</dt><dd>@${escapeHtml(u.username)}</dd>
+        <dt>Member since</dt><dd>${new Date(u.createdAt).toLocaleDateString()}</dd>
+        <dt>Avatar color</dt><dd><span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${escapeHtml(u.avatarColor || '#3355cc')};vertical-align:middle;margin-right:5px;border:1px solid #ccc;"></span>${escapeHtml(u.avatarColor || '#3355cc')}</dd>
+      `;
+    }
+
+    function populateEditForm(u) {
+      document.getElementById('editDisplayName').value = u.displayName || '';
+      document.getElementById('editBio').value = u.bio || '';
+      document.getElementById('editCountry').value = u.country || '';
+      document.getElementById('editGamesGoal').value = u.gamesGoal || 20;
+      document.getElementById('editFavPersonality').value = u.favPersonality || 'cheerleader';
+      document.getElementById('editFavDifficulty').value = u.favDifficulty || 'medium';
+      document.getElementById('editAvatarColor').value = u.avatarColor || '#3355cc';
+    }
+
+    async function loadProfile() {
+      try {
+        const data = await api('/api/users/profile');
+        renderView(data);
+      } catch (err) {
+        showError(document.getElementById('profileError'), err.message);
+      }
+    }
+
+    await loadProfile();
+
+    document.getElementById('editToggleBtn').addEventListener('click', () => {
+      document.getElementById('viewMode').style.display = 'none';
+      document.getElementById('editMode').style.display = '';
+      document.getElementById('editToggleBtn').style.display = 'none';
+      if (profile) populateEditForm(profile.user);
+    });
+
+    document.getElementById('cancelEditBtn').addEventListener('click', () => {
+      document.getElementById('viewMode').style.display = '';
+      document.getElementById('editMode').style.display = 'none';
+      document.getElementById('editToggleBtn').style.display = '';
+    });
+
+    document.getElementById('saveProfileBtn').addEventListener('click', async () => {
+      const btn = document.getElementById('saveProfileBtn');
+      const errBox = document.getElementById('saveError');
+      clearError(errBox);
+      btn.disabled = true;
+
+      const body = {
+        displayName: document.getElementById('editDisplayName').value,
+        bio: document.getElementById('editBio').value,
+        country: document.getElementById('editCountry').value,
+        gamesGoal: Number(document.getElementById('editGamesGoal').value),
+        favPersonality: document.getElementById('editFavPersonality').value,
+        favDifficulty: document.getElementById('editFavDifficulty').value,
+        avatarColor: document.getElementById('editAvatarColor').value,
+      };
+
+      try {
+        const data = await api('/api/users/profile', { method: 'PUT', body });
+        const profileData = await api('/api/users/profile');
+        renderView(profileData);
+        document.getElementById('viewMode').style.display = '';
+        document.getElementById('editMode').style.display = 'none';
+        document.getElementById('editToggleBtn').style.display = '';
+      } catch (err) {
+        showError(errBox, err.message);
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

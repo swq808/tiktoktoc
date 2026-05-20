@@ -4,7 +4,8 @@ import { getUsers, saveUsers } from '../lib/store.js';
 const router = express.Router();
 
 function publicUser(u) {
-  return { username: u.username, createdAt: u.createdAt };
+  const { password, ...rest } = u;
+  return rest;
 }
 
 router.post('/register', (req, res) => {
@@ -27,11 +28,21 @@ router.post('/register', (req, res) => {
   if (users.some((u) => u.username.toLowerCase() === trimmed.toLowerCase())) {
     return res.status(409).json({ error: 'Username already taken.' });
   }
+
   const newUser = {
+    id: `u_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
     username: trimmed,
     // NOTE: plaintext for class learning purposes only — never do this in production.
     password: String(password),
+    role: 'user',
     createdAt: new Date().toISOString(),
+    displayName: trimmed,
+    bio: '',
+    favPersonality: 'cheerleader',
+    favDifficulty: 'medium',
+    country: '',
+    gamesGoal: 20,
+    avatarColor: '#3355cc',
   };
   users.push(newUser);
   saveUsers(users);

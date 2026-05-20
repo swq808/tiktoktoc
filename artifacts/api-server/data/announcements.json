@@ -1,0 +1,42 @@
+[
+  {
+    "id": "ann_001",
+    "title": "Welcome to Tic Tac Toe AI!",
+    "body": "Challenge our AI across three difficulty levels — easy, medium, and hard (unbeatable minimax). Pick a personality for some extra drama.",
+    "status": "active",
+    "createdAt": "2026-05-01T10:00:00.000Z",
+    "createdBy": "admin"
+  },
+  {
+    "id": "ann_002",
+    "title": "Hard Mode is Unbeatable",
+    "body": "Think you can crack a perfect minimax engine? Hard mode has never lost and never will. Draws are the best you can hope for.",
+    "status": "active",
+    "createdAt": "2026-05-03T14:30:00.000Z",
+    "createdBy": "admin"
+  },
+  {
+    "id": "ann_003",
+    "title": "Leaderboard: Points System",
+    "body": "You earn 3 points per win, 1 per draw, and 0 for a loss. Tiebreakers use win rate. Climb the board!",
+    "status": "active",
+    "createdAt": "2026-05-07T09:00:00.000Z",
+    "createdBy": "admin"
+  },
+  {
+    "id": "ann_004",
+    "title": "Voice Commentary Is Here",
+    "body": "The AI can now read its trash talk out loud using your browser's text-to-speech engine. Click the speaker icon during a match.",
+    "status": "inactive",
+    "createdAt": "2026-05-10T11:00:00.000Z",
+    "createdBy": "admin"
+  },
+  {
+    "id": "ann_005",
+    "title": "Profile Customization Unlocked",
+    "body": "You can now set a display name, bio, favorite difficulty, favorite AI personality, and more on your Profile page.",
+    "status": "active",
+    "createdAt": "2026-05-15T08:00:00.000Z",
+    "createdBy": "admin"
+  }
+]

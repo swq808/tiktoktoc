@@ -8,6 +8,9 @@ import authRoutes from './routes/auth.js';
 import gameRoutes from './routes/games.js';
 import aiRoutes from './routes/ai.js';
 import statsRoutes from './routes/stats.js';
+import usersRoutes from './routes/users.js';
+import adminRoutes from './routes/admin.js';
+import announcementsRoutes from './routes/announcements.js';
 import { ensureDataFiles } from './lib/store.js';
 
 dotenv.config();
@@ -39,6 +42,9 @@ app.use('/api/auth', authRoutes);
 app.use('/api/games', gameRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/stats', statsRoutes);
+app.use('/api/users', usersRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/announcements', announcementsRoutes);
 
 app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'] }));
 
