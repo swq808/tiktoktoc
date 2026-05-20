@@ -1,5 +1,5 @@
 import express from 'express';
-import { getUsers, getGames, getAnnouncements, saveAnnouncements } from '../lib/store.js';
+import { getUsers, saveUsers, getGames, getAnnouncements, saveAnnouncements } from '../lib/store.js';
 
 const router = express.Router();
 
@@ -89,6 +89,30 @@ router.delete('/announcements/:id', (req, res) => {
   announcements.splice(idx, 1);
   saveAnnouncements(announcements);
   res.json({ ok: true });
+});
+
+router.put('/users/:id/role', (req, res) => {
+  const { id } = req.params;
+  const { role } = req.body || {};
+  if (role !== 'admin' && role !== 'user') {
+    return res.status(400).json({ error: 'Role must be "admin" or "user".' });
+  }
+  const users = getUsers();
+  const idx = users.findIndex((u) => u.id === id);
+  if (idx === -1) return res.status(404).json({ error: 'User not found.' });
+
+  const adminUser = users.find((u) => u.username === req.session.username);
+  if (users[idx].id === adminUser.id && role !== 'admin') {
+    return res.status(400).json({ error: 'You cannot remove your own admin role.' });
+  }
+
+  users[idx].role = role;
+  users[idx].roleUpdatedAt = new Date().toISOString();
+  users[idx].roleUpdatedBy = req.session.username;
+  saveUsers(users);
+
+  const { password, ...rest } = users[idx];
+  res.json({ user: rest });
 });
 
 export default router;

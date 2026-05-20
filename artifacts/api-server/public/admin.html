@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin · Tic Tac Toe AI</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <nav class="nav" data-nav></nav>
+  <main class="container">
+    <div class="row between" style="margin-bottom:20px;">
+      <h1 style="margin:0; font-size:28px;">Admin Dashboard</h1>
+      <span class="badge" style="background:#fff3cd;color:#856404;border-color:#ffc107; font-size:13px; padding:4px 10px;">Admin Only</span>
+    </div>
+
+    <div id="adminError"></div>
+
+    <!-- Overview Stats -->
+    <div class="grid-cards" style="margin-bottom:24px;">
+      <div class="card" style="text-align:center;">
+        <div class="stat-big" id="statUsers">—</div>
+        <div class="muted" style="margin-top:4px;">Total Users</div>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="stat-big" id="statGames">—</div>
+        <div class="muted" style="margin-top:4px;">Total Games</div>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="stat-big" id="statToday">—</div>
+        <div class="muted" style="margin-top:4px;">Games Today</div>
+      </div>
+    </div>
+
+    <!-- Users Section -->
+    <div class="card" style="margin-bottom:24px;">
+      <div class="row between" style="margin-bottom:14px;">
+        <h2 style="margin:0;">All Users</h2>
+        <span id="userCount" class="muted" style="font-size:13px;"></span>
+      </div>
+      <div id="usersTable">Loading…</div>
+    </div>
+
+    <!-- Announcements Section -->
+    <div class="card">
+      <div class="row between" style="margin-bottom:14px;">
+        <h2 style="margin:0;">Announcements</h2>
+        <button id="newAnnBtn" class="primary">+ New announcement</button>
+      </div>
+      <p class="muted" style="margin-top:0; font-size:13px;">Active announcements are shown on the home page to all users. Toggle status to show or hide them.</p>
+      <div id="annList">Loading…</div>
+    </div>
+  </main>
+
+  <!-- Announcement Edit Modal -->
+  <div id="annModal" style="display:none;" class="modal-overlay">
+    <div class="modal-box card">
+      <div class="row between" style="margin-bottom:14px;">
+        <h2 style="margin:0;" id="annModalTitle">New Announcement</h2>
+        <button id="closeAnnModal" class="ghost" style="font-size:18px; padding:2px 8px;">✕</button>
+      </div>
+      <div class="field">
+        <label for="annTitleInput">Title</label>
+        <input id="annTitleInput" class="input" maxlength="100" placeholder="Announcement title…" />
+      </div>
+      <div class="field">
+        <label for="annBodyInput">Message</label>
+        <textarea id="annBodyInput" class="input" rows="4" maxlength="500" placeholder="What do you want to tell players?"></textarea>
+      </div>
+      <div class="field">
+        <label for="annStatusInput">Status</label>
+        <select id="annStatusInput" class="input">
+          <option value="active">Active (visible to all users)</option>
+          <option value="inactive">Inactive (hidden from users)</option>
+        </select>
+      </div>
+      <div class="field" style="margin-top:18px;">
+        <div class="row" style="gap:10px;">
+          <button id="saveAnnBtn" class="primary">Save</button>
+          <button id="cancelAnnBtn">Cancel</button>
+        </div>
+        <div id="annModalError" style="margin-top:8px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- User Role Edit Modal -->
+  <div id="roleModal" style="display:none;" class="modal-overlay">
+    <div class="modal-box card" style="max-width:420px;">
+      <div class="row between" style="margin-bottom:14px;">
+        <h2 style="margin:0;">Change User Role</h2>
+        <button id="closeRoleModal" class="ghost" style="font-size:18px; padding:2px 8px;">✕</button>
+      </div>
+      <p style="margin-top:0;" id="roleModalUser" class="muted"></p>
+      <div class="field">
+        <label for="roleSelect">Role</label>
+        <select id="roleSelect" class="input">
+          <option value="user">User (standard access)</option>
+          <option value="admin">Admin (full dashboard access)</option>
+        </select>
+      </div>
+      <div class="field" style="margin-top:18px;">
+        <div class="row" style="gap:10px;">
+          <button id="saveRoleBtn" class="primary">Save role</button>
+          <button id="cancelRoleBtn">Cancel</button>
+        </div>
+        <div id="roleModalError" style="margin-top:8px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { renderNav, api, escapeHtml, showError, clearError } from '/main.js';
+
+    const user = await renderNav('/admin');
+    if (!user) { window.location.href = '/login'; }
+    if (user && user.role !== 'admin') { window.location.href = '/'; }
+
+    let editingAnnId = null;
+    let editingUserId = null;
+    let allUsers = [];
+
+    // ── Load overview stats ──────────────────────────────────────────────────
+    async function loadStats() {
+      try {
+        const data = await api('/api/admin/stats');
+        document.getElementById('statUsers').textContent = data.totalUsers;
+        document.getElementById('statGames').textContent = data.totalGames;
+        document.getElementById('statToday').textContent = data.gamesToday;
+      } catch (err) {
+        showError(document.getElementById('adminError'), err.message);
+      }
+    }
+
+    // ── Load users table ─────────────────────────────────────────────────────
+    async function loadUsers() {
+      try {
+        const data = await api('/api/admin/users');
+        allUsers = data.users;
+        document.getElementById('userCount').textContent = `${allUsers.length} user${allUsers.length !== 1 ? 's' : ''}`;
+        if (!allUsers.length) {
+          document.getElementById('usersTable').innerHTML = '<p class="muted">No users yet.</p>';
+          return;
+        }
+        document.getElementById('usersTable').innerHTML = `
+          <table>
+            <thead><tr>
+              <th>Username</th>
+              <th>Display name</th>
+              <th>Role</th>
+              <th>Country</th>
+              <th>Games</th>
+              <th>Wins</th>
+              <th>Joined</th>
+              <th></th>
+            </tr></thead>
+            <tbody>
+              ${allUsers.map(u => `
+                <tr>
+                  <td><strong>@${escapeHtml(u.username)}</strong></td>
+                  <td>${escapeHtml(u.displayName || '—')}</td>
+                  <td>
+                    <span class="badge" style="${u.role === 'admin' ? 'background:#fff3cd;color:#856404;border-color:#ffc107;' : 'background:#eee;color:#555;border-color:#bbb;'}">
+                      ${escapeHtml(u.role)}
+                    </span>
+                  </td>
+                  <td>${escapeHtml(u.country || '—')}</td>
+                  <td class="right">${u.gameCount}</td>
+                  <td class="right">${u.wins}</td>
+                  <td style="white-space:nowrap;">${new Date(u.createdAt).toLocaleDateString()}</td>
+                  <td>
+                    <button class="ghost changeRoleBtn" style="font-size:13px; color:var(--accent);" data-id="${escapeHtml(u.id)}" data-username="${escapeHtml(u.username)}" data-role="${escapeHtml(u.role)}">
+                      Edit role
+                    </button>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+        document.querySelectorAll('.changeRoleBtn').forEach(btn => {
+          btn.addEventListener('click', () => openRoleModal(btn.dataset.id, btn.dataset.username, btn.dataset.role));
+        });
+      } catch (err) {
+        showError(document.getElementById('adminError'), err.message);
+      }
+    }
+
+    // ── Load announcements list ──────────────────────────────────────────────
+    async function loadAnnouncements() {
+      try {
+        const data = await api('/api/admin/announcements');
+        const anns = data.announcements;
+        if (!anns.length) {
+          document.getElementById('annList').innerHTML = '<p class="muted">No announcements yet. Create one above.</p>';
+          return;
+        }
+        document.getElementById('annList').innerHTML = anns.map(a => `
+          <div class="ann-row" data-id="${escapeHtml(a.id)}">
+            <div class="ann-info">
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:2px;">
+                <strong>${escapeHtml(a.title)}</strong>
+                <span class="badge" style="${a.status === 'active' ? 'background:#ddffdd;color:#006600;border-color:#88cc88;' : 'background:#eee;color:#555;border-color:#bbb;'}">
+                  ${a.status}
+                </span>
+              </div>
+              <p class="muted" style="margin:0 0 2px; font-size:13px;">${escapeHtml(a.body)}</p>
+              <span class="muted" style="font-size:12px;">By ${escapeHtml(a.createdBy)} · ${new Date(a.createdAt).toLocaleDateString()}</span>
+            </div>
+            <div class="ann-actions">
+              <button class="editAnnBtn" style="font-size:13px;" data-id="${escapeHtml(a.id)}">Edit</button>
+              <button class="toggleAnnBtn" style="font-size:13px;" data-id="${escapeHtml(a.id)}" data-status="${escapeHtml(a.status)}">
+                ${a.status === 'active' ? 'Deactivate' : 'Activate'}
+              </button>
+              <button class="deleteAnnBtn" style="font-size:13px; color:var(--danger);" data-id="${escapeHtml(a.id)}">Delete</button>
+            </div>
+          </div>
+        `).join('');
+
+        document.querySelectorAll('.editAnnBtn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const ann = anns.find(a => a.id === btn.dataset.id);
+            if (ann) openAnnModal(ann);
+          });
+        });
+
+        document.querySelectorAll('.toggleAnnBtn').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const newStatus = btn.dataset.status === 'active' ? 'inactive' : 'active';
+            try {
+              await api(`/api/admin/announcements/${btn.dataset.id}`, { method: 'PUT', body: { status: newStatus } });
+              await loadAnnouncements();
+            } catch (err) {
+              showError(document.getElementById('adminError'), err.message);
+            }
+          });
+        });
+
+        document.querySelectorAll('.deleteAnnBtn').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            if (!confirm('Delete this announcement?')) return;
+            try {
+              await api(`/api/admin/announcements/${btn.dataset.id}`, { method: 'DELETE' });
+              await loadAnnouncements();
+            } catch (err) {
+              showError(document.getElementById('adminError'), err.message);
+            }
+          });
+        });
+      } catch (err) {
+        showError(document.getElementById('adminError'), err.message);
+      }
+    }
+
+    // ── Announcement modal ───────────────────────────────────────────────────
+    function openAnnModal(ann = null) {
+      editingAnnId = ann ? ann.id : null;
+      document.getElementById('annModalTitle').textContent = ann ? 'Edit Announcement' : 'New Announcement';
+      document.getElementById('annTitleInput').value = ann ? ann.title : '';
+      document.getElementById('annBodyInput').value = ann ? ann.body : '';
+      document.getElementById('annStatusInput').value = ann ? ann.status : 'active';
+      clearError(document.getElementById('annModalError'));
+      document.getElementById('annModal').style.display = '';
+    }
+
+    function closeAnnModal() {
+      document.getElementById('annModal').style.display = 'none';
+      editingAnnId = null;
+    }
+
+    document.getElementById('newAnnBtn').addEventListener('click', () => openAnnModal());
+    document.getElementById('closeAnnModal').addEventListener('click', closeAnnModal);
+    document.getElementById('cancelAnnBtn').addEventListener('click', closeAnnModal);
+    document.getElementById('annModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('annModal')) closeAnnModal();
+    });
+
+    document.getElementById('saveAnnBtn').addEventListener('click', async () => {
+      const btn = document.getElementById('saveAnnBtn');
+      const errBox = document.getElementById('annModalError');
+      clearError(errBox);
+      btn.disabled = true;
+      const body = {
+        title: document.getElementById('annTitleInput').value,
+        body: document.getElementById('annBodyInput').value,
+        status: document.getElementById('annStatusInput').value,
+      };
+      try {
+        if (editingAnnId) {
+          await api(`/api/admin/announcements/${editingAnnId}`, { method: 'PUT', body });
+        } else {
+          await api('/api/admin/announcements', { method: 'POST', body });
+        }
+        closeAnnModal();
+        await loadAnnouncements();
+      } catch (err) {
+        showError(errBox, err.message);
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    // ── Role modal ───────────────────────────────────────────────────────────
+    function openRoleModal(id, username, currentRole) {
+      editingUserId = id;
+      document.getElementById('roleModalUser').textContent = `Changing role for @${username}`;
+      document.getElementById('roleSelect').value = currentRole;
+      clearError(document.getElementById('roleModalError'));
+      document.getElementById('roleModal').style.display = '';
+    }
+
+    function closeRoleModal() {
+      document.getElementById('roleModal').style.display = 'none';
+      editingUserId = null;
+    }
+
+    document.getElementById('closeRoleModal').addEventListener('click', closeRoleModal);
+    document.getElementById('cancelRoleBtn').addEventListener('click', closeRoleModal);
+    document.getElementById('roleModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('roleModal')) closeRoleModal();
+    });
+
+    document.getElementById('saveRoleBtn').addEventListener('click', async () => {
+      const btn = document.getElementById('saveRoleBtn');
+      const errBox = document.getElementById('roleModalError');
+      clearError(errBox);
+      btn.disabled = true;
+      try {
+        await api(`/api/admin/users/${editingUserId}/role`, {
+          method: 'PUT',
+          body: { role: document.getElementById('roleSelect').value },
+        });
+        closeRoleModal();
+        await Promise.all([loadUsers(), loadStats()]);
+      } catch (err) {
+        showError(errBox, err.message);
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    // ── Initial load ─────────────────────────────────────────────────────────
+    await Promise.all([loadStats(), loadUsers(), loadAnnouncements()]);
+  </script>
+</body>
+</html>

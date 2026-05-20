@@ -82,6 +82,18 @@
           </select>
         </div>
         <div class="field">
+          <label for="editPreferredMark">Preferred mark</label>
+          <select id="editPreferredMark" class="input">
+            <option value="X">X (always play as X)</option>
+            <option value="O">O (always play as O)</option>
+            <option value="random">Random (let the game decide)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="editWebsite">Website / Social link <span class="muted">(optional)</span></label>
+          <input id="editWebsite" class="input" maxlength="200" placeholder="https://…" />
+        </div>
+        <div class="field">
           <label for="editAvatarColor">Avatar color</label>
           <div class="row" style="gap:10px; align-items:center;">
             <input id="editAvatarColor" type="color" style="width:48px; height:36px; border:1px solid #aaa; border-radius:4px; cursor:pointer; padding:2px;" />
@@ -149,11 +161,14 @@
         </div>
       `;
 
+      const markLabels = { X: 'X', O: 'O', random: 'Random' };
       document.getElementById('viewPrefs').innerHTML = `
         <dt>Fav. personality</dt><dd>${escapeHtml(personalityLabels[u.favPersonality] || u.favPersonality || '—')}</dd>
         <dt>Fav. difficulty</dt><dd>${escapeHtml(diffLabels[u.favDifficulty] || u.favDifficulty || '—')}</dd>
+        <dt>Preferred mark</dt><dd>${escapeHtml(markLabels[u.preferredMark] || u.preferredMark || 'Random')}</dd>
         <dt>Country</dt><dd>${escapeHtml(u.country || '—')}</dd>
         <dt>Games goal</dt><dd>${u.gamesGoal || 20} games</dd>
+        <dt>Website</dt><dd>${u.website ? `<a href="${escapeHtml(u.website)}" target="_blank" rel="noopener">${escapeHtml(u.website)}</a>` : '—'}</dd>
       `;
 
       document.getElementById('viewAccount').innerHTML = `
@@ -170,6 +185,8 @@
       document.getElementById('editGamesGoal').value = u.gamesGoal || 20;
       document.getElementById('editFavPersonality').value = u.favPersonality || 'cheerleader';
       document.getElementById('editFavDifficulty').value = u.favDifficulty || 'medium';
+      document.getElementById('editPreferredMark').value = u.preferredMark || 'random';
+      document.getElementById('editWebsite').value = u.website || '';
       document.getElementById('editAvatarColor').value = u.avatarColor || '#3355cc';
     }
 
@@ -210,6 +227,8 @@
         gamesGoal: Number(document.getElementById('editGamesGoal').value),
         favPersonality: document.getElementById('editFavPersonality').value,
         favDifficulty: document.getElementById('editFavDifficulty').value,
+        preferredMark: document.getElementById('editPreferredMark').value,
+        website: document.getElementById('editWebsite').value,
         avatarColor: document.getElementById('editAvatarColor').value,
       };
 

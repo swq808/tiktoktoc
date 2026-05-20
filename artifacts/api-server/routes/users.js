@@ -30,7 +30,7 @@ router.get('/profile', requireAuth, (req, res) => {
 });
 
 router.put('/profile', requireAuth, (req, res) => {
-  const allowed = ['displayName', 'bio', 'favPersonality', 'favDifficulty', 'country', 'gamesGoal', 'avatarColor'];
+  const allowed = ['displayName', 'bio', 'favPersonality', 'favDifficulty', 'country', 'gamesGoal', 'avatarColor', 'preferredMark', 'website'];
   const updates = req.body || {};
 
   if (updates.displayName !== undefined) {
