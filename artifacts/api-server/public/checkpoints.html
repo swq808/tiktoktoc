@@ -26,13 +26,18 @@
       const dl = (label, value) => value
         ? `<dt>${label}</dt><dd>${escapeHtml(value)}</dd>`
         : '';
+      const dateStr = cp.date
+        ? new Date(cp.date + 'T12:00:00').toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
+        : '';
       return `
         <div class="checkpoint">
           <h3>
             <span class="tag">${escapeHtml(cp.tag)}</span>
             ${escapeHtml(cp.name)}
-            <span class="muted" style="font-weight:400; font-size:13px; margin-left:6px;">${link}</span>
           </h3>
+          <div class="muted" style="font-size:13px; margin-bottom:8px;">
+            ${dateStr ? `Completed: <strong>${escapeHtml(dateStr)}</strong> &bull; ` : ''}${link}
+          </div>
           <dl>
             ${dl('What I built', cp.built)}
             ${dl('What was hard', cp.hard)}

@@ -1,7 +1,7 @@
 {
   "checkpoints": [
     {
-      "tag": "CP01-setup",
+      "tag": "#01-Project-Setup",
       "name": "Project Setup",
       "date": "2026-05-01",
       "commitUrl": "",
@@ -12,7 +12,7 @@
       "ab": "Tried both nodemon and node --watch in dev — kept nodemon because the brief required it."
     },
     {
-      "tag": "CP02-accounts",
+      "tag": "#02-Register-and-Login",
       "name": "Register and Login",
       "date": "2026-05-02",
       "commitUrl": "",
@@ -23,7 +23,7 @@
       "ab": "Compared a single combined endpoint vs separate /login and /register — split them for clearer error messages."
     },
     {
-      "tag": "CP03-game",
+      "tag": "#03-Game-Board-UI",
       "name": "Game Board UI",
       "date": "2026-05-03",
       "commitUrl": "",
@@ -34,7 +34,7 @@
       "ab": "Tried both SVG lines and CSS borders for the win highlight — kept the colored cell background since it's simpler."
     },
     {
-      "tag": "CP04-pvp",
+      "tag": "#04-Human-vs-Human",
       "name": "Human vs Human",
       "date": "2026-05-04",
       "commitUrl": "",
@@ -45,7 +45,7 @@
       "ab": "Tried both eight separate ifs and the LINES array — array won for readability."
     },
     {
-      "tag": "CP05-save",
+      "tag": "#05-Save-Games",
       "name": "Save Games",
       "date": "2026-05-05",
       "commitUrl": "",
@@ -56,7 +56,7 @@
       "ab": "Considered a single games.json vs one file per user — kept one file because the brief says so."
     },
     {
-      "tag": "CP06-ai",
+      "tag": "#06-Groq-AI-Wired-Up",
       "name": "Groq AI Wired Up",
       "date": "2026-05-07",
       "commitUrl": "",
@@ -67,7 +67,7 @@
       "ab": "A: ask Groq for {move, comment}. B: compute move locally + ask Groq for {comment}. B was reliable, kept it."
     },
     {
-      "tag": "CP07-levels",
+      "tag": "#07-Difficulty-and-Personality",
       "name": "Difficulty and Personality",
       "date": "2026-05-08",
       "commitUrl": "",
@@ -78,7 +78,7 @@
       "ab": "Tried 30/70, 50/50, and 70/30 random-vs-optimal for medium — 50/50 felt most fun."
     },
     {
-      "tag": "CP08-stats",
+      "tag": "#08-Leaderboard-and-Stats",
       "name": "Leaderboard and AI Stats",
       "date": "2026-05-10",
       "commitUrl": "",
@@ -89,7 +89,7 @@
       "ab": "Compared sorting by raw wins vs points — points is fairer to people who play a lot of draws."
     },
     {
-      "tag": "CP09-profile",
+      "tag": "#09-Profile-and-Extended-Profile",
       "name": "Profile and Extended Profile",
       "date": "2026-05-15",
       "commitUrl": "",
@@ -100,7 +100,7 @@
       "ab": "Considered putting edit inline vs a separate edit mode — separate mode was cleaner on mobile."
     },
     {
-      "tag": "CP10-admin",
+      "tag": "#10-Admin-Dashboard",
       "name": "Admin Dashboard",
       "date": "2026-05-17",
       "commitUrl": "",
@@ -111,7 +111,7 @@
       "ab": "Considered a separate admin subdomain vs a /admin route — kept it as a route since the whole app is one server."
     },
     {
-      "tag": "CP11-announcements",
+      "tag": "#11-Announcements-and-History",
       "name": "Announcements and Game History",
       "date": "2026-05-18",
       "commitUrl": "",
@@ -122,7 +122,7 @@
       "ab": "Tried showing the move list as a timeline vs a badge row — badges are more compact and still readable."
     },
     {
-      "tag": "CP12-home",
+      "tag": "#12-Home-Page-and-Navigation",
       "name": "Home Page and Navigation Polish",
       "date": "2026-05-19",
       "commitUrl": "",
@@ -133,11 +133,11 @@
       "ab": "Tried showing a random Tic Tac Toe board on the hero vs a text description — kept text since the board needed JS to animate."
     },
     {
-      "tag": "CP13-polish",
+      "tag": "#13-Final-Polish",
       "name": "Final Polish and Data Seeding",
       "date": "2026-05-20",
       "commitUrl": "",
-      "built": "Added 5 seed users with full extended profiles, 5 seed games with userId cross-references, and 5 seed announcements. Verified all 8 pages load and all JSON requirements (5+ records, 4+ fields, id field, cross-file references) are met. Fixed styles for the modal overlay, progress bar, and admin announcement row layout.",
+      "built": "Added 5 seed users with full extended profiles, 5 seed games with userId cross-references, and 5 seed announcements. Added a game notes feature so users can annotate any game in their history — satisfying the 'edit data beyond the profile' requirement. Verified all 8 pages load and all JSON requirements (5+ records, 4+ fields, id field, cross-file references) are met.",
       "hard": "Making sure every page works for both logged-in and guest users — some routes needed soft redirects instead of hard 401s.",
       "change": "Add end-to-end tests to verify each page loads and the key API routes return correct data.",
       "aiUsage": "AI helped seed realistic game data and cross-checked the requirement list.",

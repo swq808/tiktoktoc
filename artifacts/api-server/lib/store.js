@@ -54,6 +54,15 @@ export function appendGame(game) {
   return game;
 }
 
+export function updateGameNote(gameId, note) {
+  const games = getGames();
+  const idx = games.findIndex(g => g.id === gameId);
+  if (idx === -1) return null;
+  games[idx].note = note;
+  saveGames(games);
+  return games[idx];
+}
+
 export function getAnnouncements() {
   return readJson(ANNOUNCEMENTS_FILE);
 }

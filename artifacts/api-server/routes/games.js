@@ -1,5 +1,5 @@
 import express from 'express';
-import { appendGame, getGames } from '../lib/store.js';
+import { appendGame, getGames, updateGameNote } from '../lib/store.js';
 
 const router = express.Router();
 
@@ -35,6 +35,20 @@ router.get('/mine', requireAuth, (req, res) => {
   const games = getGames().filter((g) => g.username === req.session.username);
   games.sort((a, b) => b.playedAt.localeCompare(a.playedAt));
   res.json({ games: games.slice(0, 50) });
+});
+
+router.put('/:id/note', requireAuth, (req, res) => {
+  const { note } = req.body || {};
+  if (typeof note !== 'string') return res.status(400).json({ error: 'note must be a string.' });
+  if (note.length > 300) return res.status(400).json({ error: 'Note must be 300 characters or fewer.' });
+
+  const all = getGames();
+  const game = all.find(g => g.id === req.params.id);
+  if (!game) return res.status(404).json({ error: 'Game not found.' });
+  if (game.username !== req.session.username) return res.status(403).json({ error: 'Not your game.' });
+
+  const updated = updateGameNote(req.params.id, note.trim());
+  res.json({ game: updated });
 });
 
 export default router;

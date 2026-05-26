@@ -52,6 +52,7 @@
       <div id="historyList">Loading…</div>
     </div>
 
+    <!-- Board modal -->
     <div id="boardModal" style="display:none;" class="modal-overlay">
       <div class="modal-box card" style="max-width:360px;">
         <div class="row between" style="margin-bottom:12px;">
@@ -63,15 +64,36 @@
         <div id="modalMoves" style="margin-top:14px; font-size:13px;"></div>
       </div>
     </div>
+
+    <!-- Note edit modal -->
+    <div id="noteModal" style="display:none;" class="modal-overlay">
+      <div class="modal-box card" style="max-width:400px;">
+        <div class="row between" style="margin-bottom:12px;">
+          <h2 style="margin:0;">Game note</h2>
+          <button id="closeNoteModal" class="ghost" style="font-size:18px; padding:2px 8px;">✕</button>
+        </div>
+        <p class="muted" style="font-size:13px; margin:0 0 10px;">Add a personal note to remember this game. Max 300 characters.</p>
+        <div class="field" style="margin-bottom:12px;">
+          <textarea id="noteText" class="input" rows="4" maxlength="300" style="resize:vertical;" placeholder="e.g. Almost beat the AI on hard! Blundered move 7…"></textarea>
+          <div id="noteCharCount" class="muted" style="font-size:12px; text-align:right; margin-top:4px;">0 / 300</div>
+        </div>
+        <div id="noteError" style="margin-bottom:8px;"></div>
+        <div class="row" style="gap:10px;">
+          <button id="saveNoteBtn" class="primary">Save note</button>
+          <button id="cancelNoteBtn">Cancel</button>
+        </div>
+      </div>
+    </div>
   </main>
 
   <script type="module">
-    import { renderNav, api, escapeHtml, showError } from '/main.js';
+    import { renderNav, api, escapeHtml, showError, clearError } from '/main.js';
 
     const user = await renderNav('/history');
     if (!user) { window.location.href = '/login'; }
 
     let allGames = [];
+    let activeNoteGameId = null;
 
     const MARKS = { X: 'x', O: 'o' };
     const WIN_LINES = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
@@ -100,6 +122,20 @@
       return p === 'trash_talker' ? 'Trash Talker' : p === 'cheerleader' ? 'Cheerleader' : p === 'zen_master' ? 'Zen Master' : p || '';
     }
 
+    function openNoteModal(game) {
+      activeNoteGameId = game.id;
+      document.getElementById('noteText').value = game.note || '';
+      updateCharCount();
+      clearError(document.getElementById('noteError'));
+      document.getElementById('noteModal').style.display = '';
+      document.getElementById('noteText').focus();
+    }
+
+    function updateCharCount() {
+      const len = document.getElementById('noteText').value.length;
+      document.getElementById('noteCharCount').textContent = `${len} / 300`;
+    }
+
     function renderList(games) {
       const list = document.getElementById('historyList');
       if (!games.length) {
@@ -115,18 +151,27 @@
             <th>Difficulty</th>
             <th>Personality</th>
             <th>Moves</th>
+            <th>Note</th>
             <th></th>
           </tr></thead>
           <tbody>
             ${games.map(g => `
-              <tr>
+              <tr data-id="${escapeHtml(g.id)}">
                 <td style="white-space:nowrap;">${new Date(g.playedAt).toLocaleDateString()}</td>
                 <td><span class="badge ${g.result}">${g.result}</span></td>
                 <td>${g.mode === 'pvai' ? 'vs AI' : 'vs Friend'}</td>
                 <td>${escapeHtml(diffLabel(g.difficulty))}</td>
                 <td>${escapeHtml(personalityLabel(g.personality))}</td>
                 <td class="right">${g.moves ? g.moves.length : '—'}</td>
-                <td><button class="viewBoardBtn ghost" style="color:var(--accent); font-size:13px;" data-id="${escapeHtml(g.id)}">View board</button></td>
+                <td style="max-width:160px;">
+                  ${g.note
+                    ? `<span class="note-preview" style="font-size:12px; color:var(--text);" title="${escapeHtml(g.note)}">${escapeHtml(g.note.length > 40 ? g.note.slice(0, 40) + '…' : g.note)}</span>`
+                    : '<span class="muted" style="font-size:12px;">—</span>'}
+                </td>
+                <td style="white-space:nowrap;">
+                  <button class="viewBoardBtn ghost" style="color:var(--accent); font-size:13px;" data-id="${escapeHtml(g.id)}">Board</button>
+                  <button class="editNoteBtn ghost" style="color:var(--accent); font-size:13px; margin-left:4px;" data-id="${escapeHtml(g.id)}">${g.note ? 'Edit note' : 'Add note'}</button>
+                </td>
               </tr>
             `).join('')}
           </tbody>
@@ -145,6 +190,14 @@
             ? `<strong>Move order:</strong> ${game.moves.map((m, i) => `<span class="badge ${m.mark === 'X' ? 'win' : 'loss'}" style="margin:2px;">#${i+1} ${m.mark}→${m.index}</span>`).join(' ')}`
             : '';
           document.getElementById('boardModal').style.display = '';
+        });
+      });
+
+      list.querySelectorAll('.editNoteBtn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const game = allGames.find(g => g.id === btn.dataset.id);
+          if (!game) return;
+          openNoteModal(game);
         });
       });
     }
@@ -182,6 +235,43 @@
     document.getElementById('boardModal').addEventListener('click', (e) => {
       if (e.target === document.getElementById('boardModal')) {
         document.getElementById('boardModal').style.display = 'none';
+      }
+    });
+
+    document.getElementById('closeNoteModal').addEventListener('click', () => {
+      document.getElementById('noteModal').style.display = 'none';
+    });
+    document.getElementById('cancelNoteBtn').addEventListener('click', () => {
+      document.getElementById('noteModal').style.display = 'none';
+    });
+    document.getElementById('noteModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('noteModal')) {
+        document.getElementById('noteModal').style.display = 'none';
+      }
+    });
+
+    document.getElementById('noteText').addEventListener('input', updateCharCount);
+
+    document.getElementById('saveNoteBtn').addEventListener('click', async () => {
+      const btn = document.getElementById('saveNoteBtn');
+      const errBox = document.getElementById('noteError');
+      clearError(errBox);
+      btn.disabled = true;
+
+      const note = document.getElementById('noteText').value;
+      try {
+        const { game: updated } = await api(`/api/games/${activeNoteGameId}/note`, {
+          method: 'PUT',
+          body: { note },
+        });
+        const idx = allGames.findIndex(g => g.id === activeNoteGameId);
+        if (idx !== -1) allGames[idx].note = updated.note;
+        document.getElementById('noteModal').style.display = 'none';
+        applyFilters();
+      } catch (err) {
+        showError(errBox, err.message);
+      } finally {
+        btn.disabled = false;
       }
     });
 
