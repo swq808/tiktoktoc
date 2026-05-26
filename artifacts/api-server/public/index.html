@@ -1,109 +1,24 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Tic Tac Toe AI</title>
-  <link rel="stylesheet" href="/styles.css" />
-</head>
-<body>
-  <nav class="nav" data-nav></nav>
-  <main>
-    <div class="hero">
-      <h1>Tic Tac Toe AI</h1>
-      <p>Play the classic game against a friend or challenge our AI across three difficulty levels — easy, medium, and hard (truly unbeatable). Pick a personality and let the smack talk begin.</p>
-      <div class="cta-row">
-        <a href="/game" class="btn primary" id="playBtn">Play now</a>
-        <a href="/stats" class="btn">Leaderboard</a>
-      </div>
-    </div>
-
-    <div class="container">
-      <div class="grid-cards" style="margin-bottom: 24px;">
-        <div class="card feature-card">
-          <div class="feature-icon">🤖</div>
-          <h3>AI Opponent</h3>
-          <p class="muted">Three difficulty modes: random, mixed, and minimax (unbeatable). The hard AI plays perfectly every time.</p>
-        </div>
-        <div class="card feature-card">
-          <div class="feature-icon">🎭</div>
-          <h3>Three Personalities</h3>
-          <p class="muted">Choose Trash Talker, Cheerleader, or Zen Master. Each has unique commentary powered by Groq AI.</p>
-        </div>
-        <div class="card feature-card">
-          <div class="feature-icon">🏆</div>
-          <h3>Leaderboard</h3>
-          <p class="muted">Earn 3 pts per win and 1 per draw. Climb the global ranking and track your win rate.</p>
-        </div>
-      </div>
-
-      <div id="announcementsSection" style="display:none; margin-bottom:24px;">
-        <h2 style="margin-bottom:12px; font-size:18px;">Announcements</h2>
-        <div id="announcementsList"></div>
-      </div>
-
-      <div class="grid-cards">
-        <div class="card">
-          <h2>Quick stats</h2>
-          <div id="quickStats" class="muted">Loading…</div>
-        </div>
-        <div class="card">
-          <h2>Get started</h2>
-          <p class="muted" style="margin-bottom:14px;">Register a free account to save your games and climb the leaderboard.</p>
-          <div id="guestCta">
-            <a href="/login" class="btn primary">Sign up free</a>
-            <a href="/login" class="btn" style="margin-left:8px;">Log in</a>
-          </div>
-          <div id="userCta" style="display:none;">
-            <a href="/game" class="btn primary">Play now</a>
-            <a href="/profile" class="btn" style="margin-left:8px;">My profile</a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </main>
-
-  <script type="module">
-    import { renderNav, api, getMe, escapeHtml } from '/main.js';
-
-    const user = await renderNav('/');
-    if (user) {
-      document.getElementById('guestCta').style.display = 'none';
-      document.getElementById('userCta').style.display = '';
-    }
-
-    async function loadAnnouncements() {
-      try {
-        const { announcements } = await api('/api/announcements');
-        if (!announcements.length) return;
-        const section = document.getElementById('announcementsSection');
-        section.style.display = '';
-        document.getElementById('announcementsList').innerHTML = announcements.map(a => `
-          <div class="card announcement-card" style="margin-bottom:10px; border-left:3px solid var(--accent);">
-            <strong>${escapeHtml(a.title)}</strong>
-            <p class="muted" style="margin:4px 0 0;">${escapeHtml(a.body)}</p>
-          </div>
-        `).join('');
-      } catch { /* silently skip */ }
-    }
-
-    async function loadQuickStats() {
-      try {
-        const { leaderboard } = await api('/api/stats/leaderboard');
-        const totalPlayers = leaderboard.length;
-        const totalGames = leaderboard.reduce((s, r) => s + r.wins + r.losses + r.draws, 0);
-        document.getElementById('quickStats').innerHTML = `
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:4px;">
-            <div><div style="font-size:28px; font-weight:bold; color:var(--accent);">${totalPlayers}</div><div>Players</div></div>
-            <div><div style="font-size:28px; font-weight:bold; color:var(--accent);">${totalGames}</div><div>Games played</div></div>
-          </div>
-        `;
-      } catch {
-        document.getElementById('quickStats').textContent = 'No games yet — be the first!';
-      }
-    }
-
-    await Promise.all([loadAnnouncements(), loadQuickStats()]);
-  </script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <title>Car Game</title>
+    <meta name="description" content="Car Game — built on Replit. Update this description to reflect the app." />
+    <meta name="robots" content="index, follow" />
+    <meta property="og:title" content="Car Game" />
+    <meta property="og:description" content="Car Game — built on Replit. Update this description to reflect the app." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Car Game" />
+    <meta name="twitter:description" content="Car Game — built on Replit. Update this description to reflect the app." />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>
